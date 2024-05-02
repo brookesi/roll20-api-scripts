@@ -24,7 +24,7 @@ Fade out Daylight & fade out Music simultaneously
 
 ### Notes, Hints & Tips
 
-**NOTE 1**: The transparency aspect of the script ignores any colour values explicitly set to ‘transparent’. It works by using the HTML colour trick of appending opacity to a colour code e.g. #ff0000 becomes #ff0000ff.  Therefore you can explicitly set e.g. stroke or fill colour to ‘transparent’ if you want it to be ignored.
+**NOTE 1**: The transparency aspect of the script ignores any colour values explicitly set to ‘transparent’. It works by using the HTML colour trick of appending opacity to a colour code e.g. #ff0000 becomes #ff0000ff. Therefore, you can explicitly set e.g. stroke or fill colour to ‘transparent’ if you want it to be ignored.
 
 **HINT**: I found that transitioning a shape with both `fill` and `stroke` was not quite as nice as using fill alone, as the stroke (border) could be seen during the transition. So generally I left stroke explicitly transparent. This may be a browser-specific thing.
 
@@ -62,7 +62,7 @@ Transition has a number of ‘convenience’ actions for ‘quick and dirty’ e
 
 As implied, select a group of objects and run the script. The objects (text and shape) will fade out to transparent or in to completely opaque.
 ###
-#### !transition fade-daylight <value 0.0 to 1.0> [increment, default:0.04] [milliseconds, default: 80]
+#### !transition fade-daylight <value 0.0 to 1.0> \[increment, default:0.04] \[milliseconds, default: 80]
 Change daylight brightness. The first value can also take a number of (case-insensitive) presets:
 
 day         (1.0)<br>
@@ -75,16 +75,16 @@ This can then be macro-ed up as:
 
 >!transition fade-daylight ?{Light Level|Day|Overcast|Dusk|Moonlight|Night}
 
-(I stole this code from another script somewhere, or maybe off the forum but I can't remember where ;-)
+(I stole this code from another script somewhere, or maybe off the forum, but I can't remember where ;-)
 ###
-####  !transition fade-jukebox <track> <start volume> <end volume> [increment, default: 2] [milliseconds, default: 800] [reset]
+####  !transition fade-jukebox <track> <start volume> <end volume> \[increment, default: 2] \[milliseconds, default: 800] [reset]
 
 Fade a jukebox track from one volume to another. These can be ‘stacked’ in a macro to do a cross-fade. e.g.:
 
 >!transition fade-jukebox Birdsong 20 0 1 1000<br>
 >!transition fade-jukebox WargRiders 0 20 1 1000
 ###
-#### !transition wrap-macro <macro> <increment> <milliseconds> <from|to> [from|to] [from|to]…
+#### !transition wrap-macro <macro> <increment> <milliseconds> <from|to> \[from|to] \[from|to]…
 
 This command allows you to pass repeated incremental values to a macro. An example would be:
 
@@ -104,7 +104,7 @@ Also note that you do not have to use ANY arg values in your wrapped macro if yo
 
 will cause the token to move 1 unit per iteration.
 
-**WARNING**: I added this functionality because I wanted to move page elements and there was no point reinventing the wheel as TokenMod is the go-to for this type of thing. **However** do note that you must use **--ids** because this is an api calling an api so no selected items get passed through in the message, **and** this further means you must set the TokenMod config item to allow players to use **--ids** as the api does not pass the ‘_is player a GM_’ test within Token Mod. (Yeah, that didn’t take me half a day to find ;-))
+**WARNING**: I added this functionality because I wanted to move page elements and there was no point reinventing the wheel as TokenMod is the go-to for this type of thing. **However**, do note that you must use **--ids** because this is an api calling an api so no selected items get passed through in the message, **and** this further means you must set the TokenMod config item to allow players to use **--ids** as the api does not pass the ‘_is player a GM_’ test within Token Mod. (Yeah, that didn’t take me half a day to find ;-))
 
 ### Utility Commands
 
