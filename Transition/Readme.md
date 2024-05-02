@@ -1,6 +1,8 @@
 # Transition
 ### An API Script for Shape, Text, Jukebox, Daylight & Macro Transitions 
 
+Script and these instructions available [here](https://github.com/brookesi/roll20-api-scripts/tree/master/Transition)
+
 As I wanted to create a dramatic opening page for my new Lord of the Rings 5e Roleplaying game (from Free League Publishing), I started writing a script to automate transparency fading. ‘Transition’ is the result, and the original scope has expanded considerably!
 
 Here is a video showing my opening sequence just to give a sense of what the script can do: [link](https://video.wixstatic.com/video/6777d4_0b70cb3c5b974fe490c5a8a1715b83de/720p/mp4/file.mp4)
