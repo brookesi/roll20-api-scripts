@@ -568,6 +568,20 @@ const Transition = (() => {
                                 clog("- WARNING: Unable to find macro: " + macroName + ", ignoring and continuing...");
                             }
                         }
+                        if(id.toLowerCase().startsWith("exec-macro:")) {
+                            // We cannot execute a macro directly so try and grab and execute its content
+                            // This will not work if the macro invokes another macro
+                            // TODO Recursively parse macros?
+                            const macroName = id.slice(11);
+                            const macroObj = findObjs({ type: "macro", name: macroName })[0];
+                            if(macroObj) {
+                                // Actually execute the macro by sending its 'body' to chat
+                                sendChat('Transition', macroObj.get("action"));
+                            }
+                            else {
+                                clog("- WARNING: Unable to find macro: " + macroName + ", ignoring and continuing...");
+                            }
+                        }
                         else if(id.toLowerCase().startsWith("fade-jb:")) {
                             // Jukebox fade, we expect a string formatted as:
                             // Track:StartVolume:EndVolume:Increment:Ms
@@ -792,24 +806,9 @@ const Transition = (() => {
 
         clog("fadeJukebox: " + args);
 
-        let playing = true;
-        if(reset) {
-            // If we are resetting then just fade out and switch off track
-            args[3] = "current";
-            args[4] = 0;
-
-            // Set delay to 10ms so reset happens quickly, cannot set to zero as we do an
-            // inline test of volume ? volume : <default>
-            // TODO Should the zero case be handled better?
-            // check if we have A,B,Track,current,0,X
-            args.length >= 6 ? args[5] = 10 : args.push(10); // Increment
-            args.length >= 7 ? args[6] = 10 : args.push(10); // Delay
-            playing = false;
-        }
-
         let p = {
             trackName : args[2],
-            startVolume : args[3],
+            startVolume : toInt(args[3]),
             endVolume : toInt(args[4]),
             increment : Math.abs(toInt(args[5])) || 2,
             ms : Math.abs(toInt(args[6])) || 800
@@ -830,14 +829,6 @@ const Transition = (() => {
             return;
         }
 
-        // If startvolume === current then get it and set into parameters block
-        if(p.startVolume === "current") {
-            p.startVolume = jbTrack.get("volume");
-        }
-        else {
-            p.startVolume = +p.startVolume;
-        }
-
         clog("- Parameters: " + JSON.stringify(p));
 
         // Check which way we are going
@@ -846,7 +837,17 @@ const Transition = (() => {
             return;
         }
 
-        const operation = p.startVolume < p.endVolume ? "in" : "out";
+        let operation = p.startVolume < p.endVolume ? "in" : "out";
+
+        if(reset) {
+            // If we are resetting then set end volume to start volume
+            p.endVolume = p.startVolume;
+            // Set delay to 10ms so we reset quickly
+            p.ms = 10;
+            // We don't really care about increment as we will only go round the interval once, but we do need to flip
+            // the in-out operation
+            operation = operation === "in" ? "out" : "in";
+        }
 
         let volume = p.startVolume;
         jbTrack.set("volume", p.startVolume);
@@ -1169,9 +1170,10 @@ const Transition = (() => {
 
                 //clog("chatMessage: who: " + whoAMI + ", arg: " + arg);
 
-                // Look up our operation function and invoke it
+                // Look up our operation function and invoke it (pass 3rd arg of reset if exists, although not all
+                // 'standalone' functions support it)
                 if(operations[arg]) {
-                    operations[arg](msg, args);
+                    operations[arg](msg, args, args[args.length-1] === "reset");
                 }
                 else {
                     clog("Transition - Unknown operation: " + arg, true);
