@@ -3,9 +3,7 @@
 
 As I wanted to create a dramatic opening page for my new Lord of the Rings 5e Roleplaying game (from Free League Publishing), I started writing a script to automate transparency fading. ‘Transition’ is the result, and the original scope has expanded considerably!
 
-Here is a video showing my opening sequence just to give a sense of what the script can do:
-
-https://video.wixstatic.com/video/6777d4_0b70cb3c5b974fe490c5a8a1715b83de/720p/mp4/file.mp4
+Here is a video showing my opening sequence just to give a sense of what the script can do: [link](https://video.wixstatic.com/video/6777d4_0b70cb3c5b974fe490c5a8a1715b83de/720p/mp4/file.mp4)
 
 The above video sequence was generated from:
 
@@ -83,6 +81,11 @@ Fade a jukebox track from one volume to another. These can be ‘stacked’ in a
 
 >!transition fade-jukebox Birdsong 20 0 1 1000<br>
 >!transition fade-jukebox WargRiders 0 20 1 1000
+
+**WARNING 1: Transition does not at this time support Jukebox tracks with spaces in their names, currently you have to remove spaces or replace them with dashes or underscores!**
+
+**WARNING 2: Setting a delay of less than 500ms seems to stop the track playing immediately, the volume fades, then the track starts**
+
 ###
 #### !transition wrap-macro <macro> <increment> <milliseconds> <from|to> \[from|to] \[from|to]…
 
@@ -161,3 +164,5 @@ Actually resolves to this: **-Nqhf1HIqHcxsO3TJ8uP:in:4:80**
 Any problems or suggestions then please contact me on Roll20 at https://app.roll20.net/users/2447813/coryphon
 
 ~ Coryphon ~
+
+PS Another example [here](https://video.wixstatic.com/video/6777d4_06f4817c75f64d82b8cbdb75adcdd9b9/720p/mp4/file.mp4).

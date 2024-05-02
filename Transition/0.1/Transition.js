@@ -573,6 +573,13 @@ const Transition = (() => {
                             // This will not work if the macro invokes another macro
                             // TODO Recursively parse macros?
                             const macroName = id.slice(11);
+
+                            // If we are doing a reset then bail early
+                            if(reset) {
+                                clog("- WARNING: Ignoring macro: " + macroName + " as we are doing a reset");
+                                return;
+                            }
+
                             const macroObj = findObjs({ type: "macro", name: macroName })[0];
                             if(macroObj) {
                                 // Actually execute the macro by sending its 'body' to chat
@@ -738,7 +745,7 @@ const Transition = (() => {
             return;
         }
         if(target === start) {
-            clog("- Target == start, nothing to do!", true, true);
+            clog("- Target == start, nothing to do!");
             return;
         }
 
@@ -840,6 +847,7 @@ const Transition = (() => {
         let operation = p.startVolume < p.endVolume ? "in" : "out";
 
         if(reset) {
+            clog("- Resetting jukebox fade");
             // If we are resetting then set end volume to start volume
             p.endVolume = p.startVolume;
             // Set delay to 10ms so we reset quickly
@@ -1111,6 +1119,12 @@ const Transition = (() => {
 
         // Create a text object with the selected object ids for ease of writing complex transitions
         let selectionObj = processSelectionAndArgs(msg, args, true);
+
+        if(typeof selectionObj === 'number') {
+            // Error, we've already alerted this so just return
+            return;
+        }
+
         for(let i=0; i<selectionObj.selectedIds.length; i++) {
             let obj = getObj(selectionObj.selectedTypes[i], selectionObj.selectedIds[i]);
 
