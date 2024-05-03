@@ -137,7 +137,7 @@ So, going back to our introduction for creating our opening screen to wow and de
 
 >!transition sequence fade-jb:LoTR5e_OpeningMix:0:12 3000 #RingText -NqOagh2CoNd-UK2vApe 1000 #O-Ring -Nq81VUKHMbNM-iKaOJc 1000 #Logo -Nq4HzffCq5YTIANqhEs|-Nq4ILn0YaV8Z4GA6R6J 1000 #Background -NqTIBvszqB9c9qGYGWg 4000 #Text -Nqhf1HIqHcxsO3TJ8uP -NqmWbCG5TNtRx-u0huJ 3000 -NqmWbgjwBBFiAa7ljhd 3000 -NqmWcAUZz1oGnI6T77X 3000 -NqmWcgiXMaapJPiNAHE 3000 fade-dl:0.3:0.01:80 3000 fade-jb:LoTR5e_OpeningMix:12:0 ?{Reset||reset}
 
-So we can chain together series of operations using a number of elements, the var=n notation below signifies default values if omitted. Each command below opaerates as per the standalone commands detailed above.
+So we can chain together series of operations using a number of elements, the var=n notation below signifies default values if omitted. Each command below operates as per the standalone commands detailed above.
 
 **fade-jb**: Fade Jukebox with colon-delimited arguments of **_fade-jb:Track:StartVolume:EndVolume:[Increment=2]:[Delay=800]_**
 
