@@ -26,6 +26,7 @@ const Transition = (() => {
 	 */
 	let whoAMI;
 	let runningIntervals = {};
+	let jbFadeCache = {};
 
     /*
      * Utility functions
@@ -490,13 +491,15 @@ const Transition = (() => {
                 // An ID, may be |-delimited series of ids OR could be a macro execution or a jukebox fade, or a daylight fade...
                 // We let it go through into the ids and process in the sequence further down
                 let ids = args[i].split("|");
-                //if(args[i].startsWith("-N")) {
-                if(allIdsRx.test(ids[0])) {
-                    // Actual ids, no further action
-                    //ids = args[i].split("|");
+
+                // Test to see if we have actual ids, this is a bit lazy but grab the first id and split on colons and
+                // see if first element of array appears in our big regex of all ids. This does assume that all |-delimited
+                // ids are actual ids, but we'll bail later if theres an unfindable id
+                if(allIdsRx.test(ids[0].split(":")[0])) {
+                    // We have an actual id, no further action
                 }
                 else {
-                    // A command line
+                    // A command or a comment
                     ids = [args[i]];
                 }
                 clog("- Var ids: " + ids);
@@ -627,8 +630,8 @@ const Transition = (() => {
                             fadeDaylight(msg, params);
                         }
                         else if(allIdsRx.test(id)) {
-                            // Ok, we are here with an actual id, which might be in the form id, id:increment or
-                            // id:increment:ms, do some splittage to find out.
+                            // Ok, we are here with an actual id, which might be in the form id, id:operation,
+                            // id:operation:increment or id:operation:increment:ms, do some splittage to find out.
                             // (Note that we declared increment and ms way back at the top of this function for
                             // 'selected' mode, and transparifyImpl will default them if not set, but we don't want
                             // to override them if they have come in from a selection, so check for colons then process)
@@ -841,6 +844,11 @@ const Transition = (() => {
             clog("- Error: Unable to find track name: " + p.trackName, true, true);
             return;
         }
+
+        // Add to track cache, we do this because on a reset we reverse the track operation BUT it is quite likely
+        // that a track may be faded in at start of sequence and then out at end of sequence, so only process a
+        // a track once per sequence
+        jbFadeCache[p.trackName]
 
         clog("- Parameters: " + JSON.stringify(p));
 

@@ -26,6 +26,7 @@ const Transition = (() => {
 	 */
 	let whoAMI;
 	let runningIntervals = {};
+	let jbFadeCache = {};
 
     /*
      * Utility functions
@@ -841,6 +842,11 @@ const Transition = (() => {
             clog("- Error: Unable to find track name: " + p.trackName, true, true);
             return;
         }
+
+        // Add to track cache, we do this because on a reset we reverse the track operation BUT it is quite likely
+        // that a track may be faded in at start of sequence and then out at end of sequence, so only process a
+        // a track once per sequence
+        jbFadeCache[p.trackName]
 
         clog("- Parameters: " + JSON.stringify(p));
 
