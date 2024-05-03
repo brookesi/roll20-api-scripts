@@ -97,11 +97,11 @@ This command allows you to pass repeated incremental values to a macro. An examp
 
 Where LightMacro is:
 
->!token-mod --on has_bright_light_vision emits_bright_light emits_low_light --set bright_light_distance#arg1 low_light_distance#arg1 dim_light_opacity#20
+>!token-mod --on has_bright_light_vision emits_bright_light emits_low_light --set bright_light_distance#++arg1++ low_light_distance#++arg1++ dim_light_opacity#20
 
-The example would run LightMacro 5 times, incrementing the value of **arg1** by 1 every 500ms from 1 to 5.
+The example would run LightMacro 5 times, incrementing the value of **++arg1++** by 1 every 500ms from 1 to 5.
 
-Up to 9 arguments can be specified (**arg1 - arg9**), each with their own **to|from** values. Arguments can be re-used as shown in the example above, but note that a single increment and ms delay is applied to **all** args (at this time!). Again, you could stack different commands within one macro.
+Up to 9 arguments can be specified (**++arg1++ - ++arg9++**), each with their own **to|from** values. Arguments can be re-used as shown in the example above, but note that a single increment and ms delay is applied to **all** args (at this time!). Again, you could stack different commands within one macro.
 
 Also note that you do not have to use ANY arg values in your wrapped macro if you just want to fire it a number of times. For example, a target macro of:
 
