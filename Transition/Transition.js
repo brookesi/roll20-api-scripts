@@ -181,6 +181,8 @@ const Transition = (() => {
 
         // First arg must be 'in' or 'out', unless we are ignoring the op
         let operation;
+        let increment;
+        let ms;
         if(!ignoreOp) {
             if(args[2]) {
                 if(["in", "out"].includes(args[2])) {
@@ -195,19 +197,19 @@ const Transition = (() => {
                 clog("- First argument must be 'in' or 'out'", true);
                 return NO_OPERATION;
             }
-        }
 
-        // May have other arguments for increment and ms
-        const increment = getNonZero(args[3]);
-        if(args[3] && args[3] !== "reset" && increment === undefined) {
-            clog("- Zero or unparseable arg for increment: " + args[3]);
-            return ZERO_OR_UNPARSEABLE;
-        }
+            // May have other arguments for increment and ms
+            increment = getNonZero(args[3]);
+            if(args[3] && args[3] !== "reset" && increment === undefined) {
+                clog("- Zero or unparseable arg for increment: " + args[3]);
+                return ZERO_OR_UNPARSEABLE;
+            }
 
-        const ms = getNonZero(args[4]);
-        if(args[4] && args[4] !== "reset" && ms === undefined) {
-            clog("- Zero or unparseable arg for ms: " + args[4]);
-            return ZERO_OR_UNPARSEABLE;
+            ms = getNonZero(args[4]);
+            if(args[4] && args[4] !== "reset" && ms === undefined) {
+                clog("- Zero or unparseable arg for ms: " + args[4]);
+                return ZERO_OR_UNPARSEABLE;
+            }
         }
 
         let selectedIds = [];
@@ -1059,7 +1061,7 @@ const Transition = (() => {
         }
 
         const space = +args[2] || 20;
-        const justify = args[3].toLowerCase() || "left";
+        const justify = (args[3] && args[3].toLowerCase()) || "left";
 
         // Only going to process text objects, grab them into an array
         // We don't know the order of selectionObj so need to sort them ourselves

@@ -181,6 +181,8 @@ const Transition = (() => {
 
         // First arg must be 'in' or 'out', unless we are ignoring the op
         let operation;
+        let increment;
+        let ms;
         if(!ignoreOp) {
             if(args[2]) {
                 if(["in", "out"].includes(args[2])) {
@@ -195,19 +197,19 @@ const Transition = (() => {
                 clog("- First argument must be 'in' or 'out'", true);
                 return NO_OPERATION;
             }
-        }
 
-        // May have other arguments for increment and ms
-        const increment = getNonZero(args[3]);
-        if(args[3] && args[3] !== "reset" && increment === undefined) {
-            clog("- Zero or unparseable arg for increment: " + args[3]);
-            return ZERO_OR_UNPARSEABLE;
-        }
+            // May have other arguments for increment and ms
+            increment = getNonZero(args[3]);
+            if(args[3] && args[3] !== "reset" && increment === undefined) {
+                clog("- Zero or unparseable arg for increment: " + args[3]);
+                return ZERO_OR_UNPARSEABLE;
+            }
 
-        const ms = getNonZero(args[4]);
-        if(args[4] && args[4] !== "reset" && ms === undefined) {
-            clog("- Zero or unparseable arg for ms: " + args[4]);
-            return ZERO_OR_UNPARSEABLE;
+            ms = getNonZero(args[4]);
+            if(args[4] && args[4] !== "reset" && ms === undefined) {
+                clog("- Zero or unparseable arg for ms: " + args[4]);
+                return ZERO_OR_UNPARSEABLE;
+            }
         }
 
         let selectedIds = [];
@@ -491,13 +493,15 @@ const Transition = (() => {
                 // An ID, may be |-delimited series of ids OR could be a macro execution or a jukebox fade, or a daylight fade...
                 // We let it go through into the ids and process in the sequence further down
                 let ids = args[i].split("|");
-                //if(args[i].startsWith("-N")) {
-                if(allIdsRx.test(ids[0])) {
-                    // Actual ids, no further action
-                    //ids = args[i].split("|");
+
+                // Test to see if we have actual ids, this is a bit lazy but grab the first id and split on colons and
+                // see if first element of array appears in our big regex of all ids. This does assume that all |-delimited
+                // ids are actual ids, but we'll bail later if theres an unfindable id
+                if(allIdsRx.test(ids[0].split(":")[0])) {
+                    // We have an actual id, no further action
                 }
                 else {
-                    // A command line
+                    // A command or a comment
                     ids = [args[i]];
                 }
                 clog("- Var ids: " + ids);
@@ -628,8 +632,8 @@ const Transition = (() => {
                             fadeDaylight(msg, params);
                         }
                         else if(allIdsRx.test(id)) {
-                            // Ok, we are here with an actual id, which might be in the form id, id:increment or
-                            // id:increment:ms, do some splittage to find out.
+                            // Ok, we are here with an actual id, which might be in the form id, id:operation,
+                            // id:operation:increment or id:operation:increment:ms, do some splittage to find out.
                             // (Note that we declared increment and ms way back at the top of this function for
                             // 'selected' mode, and transparifyImpl will default them if not set, but we don't want
                             // to override them if they have come in from a selection, so check for colons then process)
@@ -1057,7 +1061,7 @@ const Transition = (() => {
         }
 
         const space = +args[2] || 20;
-        const justify = args[3].toLowerCase() || "left";
+        const justify = (args[3] && args[3].toLowerCase()) || "left";
 
         // Only going to process text objects, grab them into an array
         // We don't know the order of selectionObj so need to sort them ourselves
