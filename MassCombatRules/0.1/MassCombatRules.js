@@ -2,7 +2,7 @@ const MassCombatRules = (() => {
 
     // TODO Add a state object and allow some DC constants to be adjusted, e.g. rally, morale etc.
 
-    // Global variables    
+    // Global variables
     let currentStrength = 0;
 
     // Function lookup table
@@ -29,7 +29,7 @@ const MassCombatRules = (() => {
         "MCR-Turn-Complete": "!token-mod --set aura1_color|0000ff aura1_radius|10",
         "MCR-Turn-Reset": "!token-mod --set aura1_radius|",
     }
-            
+
     // Utility functions
     const notToken = (token) => {
         return token && token.get("_subtype") !== "token";
@@ -39,19 +39,19 @@ const MassCombatRules = (() => {
      *
      */
     functionTable.regenerateMacros = (msg, args) => {
-    
+
         // Delete and re-create our MCR macros
         const macroNames = Object.keys(macroDef);
-    
+
         // Get all macros and remove our ones
         const macros = findObjs({_type: "macro"});
-        for(let i=macros.length-1; i>=0; i--) {  
+        for(let i=macros.length-1; i>=0; i--) {
             // Delete macros starting "MCR-"
             if(macroNames.includes(macros[i].get("name"))) {
                 macros[i].remove();
             }
         }
-        
+
         for(key in macroDef) {
             // Re-create macro
             createObj("macro", {
@@ -88,9 +88,9 @@ const MassCombatRules = (() => {
         const macroNames = Object.keys(macroDef);
         const show = !(args[2] && args[2].toLowerCase() === "false");
         const val = show ? "all" : "";
-    
+
         const macros = findObjs({_type: "macro"});
-        for(let i=macros.length-1; i>=0; i--) {  
+        for(let i=macros.length-1; i>=0; i--) {
             // Show macros from our list
             if(macroNames.includes(macros[i].get("name"))) {
                 macros[i].set("visibleto", val);
