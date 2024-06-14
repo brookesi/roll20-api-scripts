@@ -350,6 +350,23 @@ var MapChange = MapChange || (function() {
                     chat("/w", msg.who, "You do not have the permission required to perform that action.");
                 }
                 break;
+            case "editable-text":
+                if(msg.selected && msg.selected.length > 0) {
+                    // Processing selected objects
+                    for(let i=0; i<msg.selected.length; i++) {
+                        if(msg.selected[i]._type === "text") {
+                            log(msg.selected[i]._id);
+                            const objs = findObjs({
+                              _id: msg.selected[i]._id
+                            });
+                            log(objs);
+
+                            //const textObj = getObj(msg.selected[i]._id, "text");
+                            objs[0].set("controlledby", "all");
+                        }
+                    }
+                }
+            break;
             default:
                 // Show the scripts help text is no further command was provided.
                 showHelp(msg, "index");
