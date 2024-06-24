@@ -13,10 +13,14 @@ const MassCombatRules = (() => {
     let currentStrength = 0;
     let whisper = "/w GM ";
     const notTokenActions = [
+        "⚔️-Battle-Report",
         "⚔️-Calculate-Forces",
+        "⚔️-Check-All-Done",
         "⚔️-Regenerate-Macros",
+        "⚔️-Register-Battle-Page-Turnorder",
         "⚔️-Roll-Strength-ABS",
         "⚔️-Show-Macros-To-Players",
+        "⚔️-Show-Names",
         "⚔️-Update-Unit-Data",
         "⚔️-Whisper",
     ];
@@ -30,14 +34,16 @@ const MassCombatRules = (() => {
     const macroDef = {
         "⚔️-Apply-Damage": "!mcr applyDamage",
         "⚔️-Apply-Damage-And-Morale": "!mcr applyDamage\n!mcr moraleCheckRoll ?{Roll||Advantage|Disadvantage}",
+        "⚔️-Battle-Report": "!mcr battleReport",
         "⚔️-Calculate-Forces": "!mcr calculateForces",
-        "⚔️-Check-All-Done": "!mcr checkAllDone ?{Mark||mark}",
+        "⚔️-Check-All-Done": "!mcr checkAllDone ?{Mark|False|True}",
         "⚔️-Clear-Diff-Terrain": "!mcr clearDifficultTerrain",
         "⚔️-Clear-Disadvtge": "!mcr clearDisadvantage",
         "⚔️-Display-Stats": "!mcr displayStats",
         "⚔️-Do-Morale-Check": "!mcr moraleCheckRoll ?{Roll||Advantage|Disadvantage}",
         "⚔️-Do-Rally-Check": "!mcr rallyCheckRoll",
-        "⚔️-Regenerate-Macros": "!mcr regenerateMacros ?{No Token Actions||true}",
+        "⚔️-Regenerate-Macros": "!mcr regenerateMacros ?{No Token Actions|False|True}",
+        "⚔️-Register-Battle-Page-Turnorder": "!mcr registerBattlePageTurnOrder",
         "⚔️-Remove-Damage": "!mcr removeDamage",
         "⚔️-Roll-Strength": "!mcr rollStrength",
         "⚔️-Roll-Strength-ABS": "!mcr rollStrength ABS",
@@ -46,11 +52,12 @@ const MassCombatRules = (() => {
         "⚔️-Set-Battle-Group": "!token-mod --set statusmarkers|!?{Colour||red|green|blue|yellow|purple|pink|brown}",
         "⚔️-Set-Diff-Terrain": "!mcr setDifficultTerrain",
         "⚔️-Set-Disadvtge": "!mcr setDisadvantage",
-        "⚔️-Show-Macros-To-Players": "!mcr showMacrosToPlayers ?{True||false}",
+        "⚔️-Show-Macros-To-Players": "!mcr showMacrosToPlayers ?{Show|True|False}",
+        "⚔️-Show-Names": "!mcr showNames ?{Show|True|False} ?{Name}",
         "⚔️-Turn-Complete": "!mcr turnComplete",
         "⚔️-Turn-Reset": "!token-mod --set aura1_radius|",
-        "⚔️-Update-Unit-Data": "!mcr updateUnitData ?{Rescan||rescan}",
-        "⚔️-Whisper": "!mcr whisper ?{State|on|off}",
+        "⚔️-Update-Unit-Data": "!mcr updateUnitData ?{Rescan|False|True}",
+        "⚔️-Whisper": "!mcr whisper ?{State|On|Off}",
     }
     
     /*
@@ -190,14 +197,8 @@ const MassCombatRules = (() => {
             const unitsObj = JSON.parse(notes);
 
             // Iterate over unit arrays, find template tokens and poke in values
-            clog("- Getting page id");
             let token;
             let pageId = getPageId(msg);
-            
-            if(!pageId) {
-                clog("- Unable to find pageId from anywhere!");
-                return;
-            }
             
             const tokenInstances = unitInstanceFn ? findObjs({
                 _type: "graphic",
@@ -252,13 +253,8 @@ const MassCombatRules = (() => {
             let token;
             let pageId = getPageId(msg);
 
-            if(!pageId) {
-                clog("- Unable to find pageId from anywhere!");
-                return;
-            }
-
             // If rescan, get all tokens
-            const rescan = args[2] === "rescan";
+            const rescan = args[2].toLowerCase() === "true";
             if(rescan) {
                 clog("- Rescanning all token instances");
             }
@@ -389,7 +385,7 @@ const MassCombatRules = (() => {
     /*
      * Calculate the total strength of each set of forces based on prefix which lives in the unit token's tooltip
      */
-    functionTable.calculateForces999 = (msg, args) => {
+    functionTable.calculateForces = (msg, args) => {
 
         let results = {};
         iterateUnitInstances(msg, args, results, function(unitInstance, results) {
@@ -412,191 +408,125 @@ const MassCombatRules = (() => {
             });
         });
     }
-    /*
-    functionTable.calculateForces = (msg, args) => {
 
-        let pageId = getPageId(msg);
-        
-        if(!pageId) {
-            clog("- Unable to find pageId from anywhere!");
-            return;
-        }
-
-        var unitDataHandout = getUnitDataHandout();
-                
-        if(!unitDataHandout) {
-            return;
-        }
-
-        // Get contents and convert to object
-        unitDataHandout.get("notes", function(notes) {
-        
-            const unitsObj = JSON.parse(notes.replace(/<[^>]*>?/gm, ''));
-            
-            const tokenInstances = findObjs({
-                _type: "graphic",
-                _subtype: "token",
-                _pageid: pageId,
-            });
-
-            let results = {};
-            for(let i=0; i<unitsObj.length; i++) {
-
-                let unitName = unitsObj[i][0];
-
-                // Matching is a problem as if we have a unit which is 'Goblin 1' and then 'Goblin Archer 1'
-                // how do we match correctly? Use a regex!
-                const regex = new RegExp(`${unitName} \\d`);
-                const unitInstances = tokenInstances.filter((tokenInstance) => tokenInstance.get("name").match(regex));
-
-                clog("- Unit: " + unitName + ": " + unitInstances.length + " units found");
-
-                _.each(unitInstances, (unitInstance) => {
-                   
-                    let prefix = unitInstance.get("tooltip");
-                    if(!results[prefix]) {
-                        results[prefix] = 0;
-                    }
-                    
-                    // Check for any units without rolled strength
-                    if(isNaN(unitInstance.get("bar2_value"))) {
-                        clog("- Warning: Unit: " + unitInstance.get("name") + " has non-number STR: " + unitInstance.get("bar2_value"));
-                        unitInstance.set({"aura1_color": "#FF0000", "aura1_radius": 0.03});
-                    }
-                    results[prefix] += toInt(unitInstance.get("bar2_value"));
-                });
-            }
-
-            _.each(Object.keys(results), (key) => {
-                clog("- " + key + ": " + results[key]);
-            });
-        });
-    }
-    */
-    
     /*
      * Check all units have acted
      */
     functionTable.checkAllDone = (msg, args) => {
-     
+
         let pageId = getPageId(msg);
         const scale = getObj("page", pageId).get("scale_number");
-                
-        if(!pageId) {
-            clog("- Unable to find pageId from anywhere!");
-            return;
-        }
 
-        var unitDataHandout = getUnitDataHandout();
-                
-        if(!unitDataHandout) {
-            return;
-        }
+        let cbData;
+        iterateUnitInstances(msg, args, cbData, function(unitInstance, cbData) {
 
-        // Get contents and convert to object
-        unitDataHandout.get("notes", function(notes) {
-        
-            const unitsObj = JSON.parse(notes.replace(/<[^>]*>?/gm, ''));
-            
-            const tokenInstances = findObjs({
-                _type: "graphic",
-                _subtype: "token",
-                _pageid: pageId,
-            });
+            // Check for any units without turn complete
+            const aura1Radius = unitInstance.get("aura1_radius");
+            //clog("- aura1Radius: " + aura1Radius);
+            if(aura1Radius === undefined || aura1Radius === "") {
 
-            let results = {};
-            
-            for(let i=0; i<unitsObj.length; i++) {
-
-                let unitName = unitsObj[i][0];
-
-                // Matching is a problem as if we have a unit which is 'Goblin 1' and then 'Goblin Archer 1'
-                // how do we match correctly? Use a regex!
-                const regex = new RegExp(`${unitName} \\d`);
-                const unitInstances = tokenInstances.filter((tokenInstance) => tokenInstance.get("name").match(regex));
-
-                //clog("- Unit: " + unitName + ": " + unitInstances.length + " units found");
-
-                _.each(unitInstances, (unitInstance) => {
-                    
-                    // Check for any units without turn complete
-                    const aura1Radius = unitInstance.get("aura1_radius");
-                    clog("- aura1Radius: " + aura1Radius);
-                    if(aura1Radius === undefined || aura1Radius === "") {
+                if(args[2].toLowerCase() === "true") {
+                    // Set aura 2 but not if we are dead!
+                    if(unitInstance.get("bar2_value")) {
                         clog("- Unit: " + unitInstance.get("name") + " is NOT turn complete");
-                        
-                        if(args[2] === "mark") {
-                            // Set aura 2
-                            unitInstance.set({"aura2_color": "#FF0000", "aura2_radius": scale/5, "aura2_square": true});
-                        }
-                        else {
-                            // Clear aura 2
-                            unitInstance.set({"aura2_color": "", "aura2_radius": "", "aura2_square": false});
-                        }
+                        unitInstance.set({"aura2_color": "#FF0000", "aura2_radius": scale/5,
+                                          "aura2_square": true, "showplayers_aura2": true});
                     }
-                });
-            }  
-        });      
+                }
+                else {
+                    // Clear aura 2
+                    unitInstance.set({"aura2_color": "", "aura2_radius": "", "aura2_square": false});
+                }
+            }
+        });
     }
 
     /*
-     * Show or hide the unit tokens nameplates
+     * Calculate the total strength of each set of forces based on prefix which lives in the unit token's tooltip
+     */
+    functionTable.battleReport = (msg, args) => {
+
+        /* Want to build up an object with this structure:
+
+            results = {
+
+                Side1: {
+                    NumUnits: 0,
+                    StartingStrength: 0,
+                    CurrentStrength: 0,
+                    NumUnitsDead: 0,
+                    PercentageDead: 0,
+                },
+                Side2: {
+                    // As above
+                }
+            }
+        */
+
+        let results = {};
+        iterateUnitInstances(msg, args, results, function(unitInstance, results) {
+
+            let prefix = unitInstance.get("tooltip");
+            if(!results[prefix]) {
+                results[prefix] = {
+                    NumUnits: 0,
+                    StartingStrength: 0,
+                    CurrentStrength: 0,
+                    NumUnitsDead: 0,
+                    PercentageDead: 0,
+                }
+            }
+
+            results[prefix].NumUnits++;
+            results[prefix].StartingStrength += toInt(unitInstance.get("bar2_max"));
+            const currStrength = toInt(unitInstance.get("bar2_value"));
+            results[prefix].CurrentStrength += currStrength;
+            results[prefix].NumUnitsDead += (currStrength === 0 ? 1 : 0);
+        }, function(results) {
+            // Calculate percentage and report as html chat
+            let html = "<table style=\"width: 60%\">";
+            const styledTRH = "<tr style=\"border: 1px solid red;\">";
+            const styledTRD = "<tr style=\"border: 1px solid black;\">";
+            _.each(Object.keys(results), (key) => {
+                results[key].PercentageDead = Math.round((results[key].NumUnitsDead / results[key].NumUnits) * 100);
+
+                html += styledTRH + "<th>" + key + "</th></tr>";
+                html += styledTRD + "<td>Total # Units:&nbsp;</td><td>" + results[key].NumUnits + "</td></tr>";
+                html += styledTRD + "<td>Starting STR:&nbsp;</td><td>" + results[key].StartingStrength + "</td></tr>";
+                html += styledTRD + "<td>Current STR:&nbsp;</td><td>" + results[key].CurrentStrength + "</td></tr>";
+                html += styledTRD + "<td># Dead Units:&nbsp;</td><td>" + results[key].NumUnitsDead + "</td></tr>";
+                html += styledTRD + "<td>% Dead Units:&nbsp;</td><td>" + results[key].PercentageDead + "</td></tr>";
+                html += "<tr><td>&nbsp;</td><td>&nbsp;</td></tr>"
+
+                clog("- " + key + ": " + JSON.stringify(results[key]));
+            });
+            html += "</table>"
+            sendChat("MCR", whisper + html);
+        });
+
+    }
+
+    /*
+     * Show or hide the unit tokens nameplates, generally will want them shown but if you forget to set the
+     * permissions this just tidies things up
      */
     functionTable.showNames = (msg, args) => {
 
-        let pageId = getPageId(msg);
+        const showNames = args[2].toLowerCase() === "true" ? true : false
 
-        if(!pageId) {
-            clog("- Unable to find pageId from anywhere!");
-            return;
-        }
+        clog("- showNames: " + showNames);
 
-        var unitDataHandout = getUnitDataHandout();
+        let cbData;
+        iterateUnitInstances(msg, args, cbData, function(unitInstance) {
 
-        if(!unitDataHandout) {
-            return;
-        }
-
-        // Get contents and convert to object
-        unitDataHandout.get("notes", function(notes) {
-
-            const unitsObj = JSON.parse(notes.replace(/<[^>]*>?/gm, ''));
-
-            const tokenInstances = findObjs({
-                _type: "graphic",
-                _subtype: "token",
-                _pageid: pageId,
-            });
-
-            if(args[2] === undefined || !["true", "false"].includes(args[2])) {
-                clog("- Requires true|false argument");
-                return
+            clog("- Unit: " + unitInstance.get("name"));
+            if(args[3]) {
+                if(unitInstance.get("tooltip") === args[3]) {
+                    unitInstance.set({"showplayers_name": showNames, "showname": showNames});
+                }
             }
-            
-            const showNames = args[2] === "true" ? true : false
-
-            for(let i=0; i<unitsObj.length; i++) {
-
-                let unitName = unitsObj[i][0];
-
-                // Matching is a problem as if we have a unit which is 'Goblin 1' and then 'Goblin Archer 1'
-                // how do we match correctly? Use a regex!
-                const regex = new RegExp(`${unitName} \\d`);
-                const unitInstances = tokenInstances.filter((tokenInstance) => tokenInstance.get("name").match(regex));
-
-                clog("- Unit: " + unitName + ": " + unitInstances.length + " units found");
-
-                _.each(unitInstances, (unitInstance) => {
-                
-                    if(args[3]) {
-                        if(unitInstance.get("tooltip") === args[3]) {
-                            unitInstance.set("showplayers_name", showNames);
-                        }
-                    }
-                    else {
-                        unitInstance.set("showplayers_name", showNames);
-                    }
-                });
+            else {
+                unitInstance.set({"showplayers_name": showNames, "showname": showNames});
             }
         });
     }
@@ -625,7 +555,7 @@ const MassCombatRules = (() => {
 
                 let thisWhisper = whisper;
                 if(args[2] === selectedObj.get("tooltip")) {
-                    // Actual whisper
+                    // Actual whisper as we are hiding enemy units from players
                     clog("- Whispering stats to GM");
                     thisWhisper = "/w GM ";
                 }
@@ -638,53 +568,24 @@ const MassCombatRules = (() => {
     }
 
     /*
-     * Remove and regenerate the macros
+     * Hide the unit tokens nameplates if they are dead
+     * TODO: Remove this, was a helper during a game!
      */
-    functionTable.regenerateMacros = (msg, args) => {
-    
-        // Delete and re-create our MCR macros
-        const macroNames = Object.keys(macroDef);
-    
-        // Get all macros and remove our ones
-        const macros = findObjs({_type: "macro"});
-        for(let i=macros.length-1; i>=0; i--) {  
-            // Delete our known macros
-            if(macroNames.includes(macros[i].get("name"))) {
-                macros[i].remove();
+     /*
+    functionTable.updateNamePlates = (msg, args) => {
+
+        let cbData;
+        iterateUnitInstances(msg, args, cbData, function(unitInstance) {
+
+            clog("- Unit: " + unitInstance.get("name") + ": " + unitInstance.get("bar2_value"));
+            const strength = unitInstance.get("bar2_value");
+            if(!isNaN(strength) && +unitInstance.get("bar2_value") === 0) {
+                clog("- Hiding nameplate");
+                unitInstance.set("showname", false);
             }
-        }
-
-        for(key in macroDef) {
-            // Re-create macro
-            const isTokenAction = (!notTokenActions.includes(key)) && (args[2] !== "true");
-
-            createObj("macro", {
-                _playerid: msg.playerid,
-                name: key,
-                action: macroDef[key],
-                istokenaction: isTokenAction
-            });
-        }
+        });
     }
-
-    /*
-     * Show macros to players by setting permissions
-     */
-    functionTable.showMacrosToPlayers = (msg, args) => {
-
-        const macroNames = Object.keys(macroDef);
-        const show = !(args[2] && args[2].toLowerCase() === "false");
-        const val = show ? "all" : "";
-    
-        const macros = findObjs({_type: "macro"});
-        for(let i=macros.length-1; i>=0; i--) {  
-            // Show macros from our list
-            const macroName = macros[i].get("name");
-            if(macroNames.includes(macroName) && !notTokenActions.includes(macroName)) {
-                macros[i].set("visibleto", val);
-            }
-        }
-    }
+    */
 
     /*
      *
@@ -833,14 +734,6 @@ const MassCombatRules = (() => {
     }
 
     /*
-     * Switch chat whisper on and off, useful for testing without clogging chat
-     */
-    functionTable.whisper = (msg, args) => {
-
-        whisper = args[2] === "off" ? "" : "/w GM ";
-    }
-
-    /*
      * Apply damage and if unit is dead mark it as such and send it to back of z-order
      */
     functionTable.applyDamage = (msg, args) => {
@@ -864,9 +757,12 @@ const MassCombatRules = (() => {
             token.set("bar2_value", strength);
 
             if(strength === 0) {
-                token.set("status_dead", true);
+                // Mark as dead and remove the nameplate so we do not get overlaps
+                token.set({"status_dead": true, "showname": false});
                 // Send token to back so we can walk over their corpses!
                 toBack(token);
+
+
             }
         });
     }
@@ -889,7 +785,7 @@ const MassCombatRules = (() => {
             }
 
             strength++;
-            token.set({"bar2_value": strength, "status_dead": false});
+            token.set({"bar2_value": strength, "status_dead": false, "showname": true});
             toFront(token);
         });
     }
@@ -1023,7 +919,7 @@ const MassCombatRules = (() => {
                 return;
             }
                         
-            let check = 20 - morale - strength;
+            let check = 15 - morale - strength;
             let name = token.get("name");
 
             if(isNaN(strength)) {
@@ -1062,9 +958,87 @@ const MassCombatRules = (() => {
             const scale = getObj("page", pageId).get("scale_number");
 
             // Set the aura
-            token.set("aura1_color", "#0000ff");
-            token.set("aura1_radius", scale/10);
+            token.set({"aura1_color": "#0000ff", "aura1_radius": scale/10, "showplayers_aura1": true});
+
+            // May have a marker aura from a 'check all done'
+            token.set({"aura2_color": "", "aura2_radius": "", "aura2_square": false});
         });
+    }
+
+    /*
+     * Switch chat whisper on and off, useful for testing without clogging chat
+     */
+    functionTable.whisper = (msg, args) => {
+
+        whisper = args[2].toLowerCase() === "off" ? "" : "/w GM ";
+        //clog("- " + whisper);
+        clog("- Whisper: " + (whisper === "" ? "Off" : "On"));
+    }
+
+    /*
+     * Remove and regenerate the macros
+     */
+    functionTable.regenerateMacros = (msg, args) => {
+
+        // Delete and re-create our MCR macros
+        const macroNames = Object.keys(macroDef);
+
+        // Get all macros and remove our ones
+        const macros = findObjs({_type: "macro"});
+        for(let i=macros.length-1; i>=0; i--) {
+            // Delete our known macros
+            if(macroNames.includes(macros[i].get("name"))) {
+                macros[i].remove();
+            }
+        }
+
+        for(key in macroDef) {
+            // Re-create macro
+            const isTokenAction = (!notTokenActions.includes(key)) && (args[2].toLowerCase() !== "true");
+
+            createObj("macro", {
+                _playerid: msg.playerid,
+                name: key,
+                action: macroDef[key],
+                istokenaction: isTokenAction
+            });
+        }
+    }
+
+    /*
+     * Show macros to players by setting permissions
+     */
+    functionTable.showMacrosToPlayers = (msg, args) => {
+
+        const macroNames = Object.keys(macroDef);
+        const show = !(args[2] && args[2].toLowerCase() === "false");
+        const val = show ? "all" : "";
+
+        const macros = findObjs({_type: "macro"});
+        for(let i=macros.length-1; i>=0; i--) {
+            // Show macros from our list
+            const macroName = macros[i].get("name");
+            if(macroNames.includes(macroName) && !notTokenActions.includes(macroName)) {
+                macros[i].set("visibleto", val);
+            }
+        }
+    }
+
+    /*
+     * Store the turnorder for the battle page
+     */
+    functionTable.registerBattlePageTurnOrder = (msg) => {
+
+        state.MassCombatRules.battlePageId = getPageId(msg);
+        //state.MassCombatRules.tokensToHideOnPageChange = [];
+
+        /*
+        _.each(msg.selected, function(selected) {
+            state.MassCombatRules.tokensToHideOnPageChange.push(selected._id);
+        });
+        */
+
+        state.MassCombatRules.battlePageTurnOrderStr = Campaign().get("turnorder");
     }
 
     /*
@@ -1096,11 +1070,53 @@ const MassCombatRules = (() => {
     };
 
     /*
+     * Page change handler handler. We use this because Roll20 retains all tokens on the turn order for the GM even
+     * when you switch pages. so if you have a battle running and then the players jump into a hero encounter with
+     * new initiatives and tokens, from the GM's point of view it's a mess.
+     * Once the player tokens and any other tokens are registered with the state object they are pushed to the GM layer
+     * if the page changes so it is obvious to the GM which are new initiatives!
+     * They then pop back to the token (objects) layer when you return to the battle page
+     */
+    pageChange = (campaign) => {
+
+        const pageId = campaign.get('playerpageid');
+        clog("pageChange: " + pageId + ": " + getObj("page", pageId).get("name"));
+
+        // Are we setup for token layer shenanigans?
+        if(state.MassCombatRules.battlePageId === -1) {
+            clog("- No battle page setup, go to the battle page, setup initiative and run !mcr registerBattlePageTurnOrder");
+            return;
+        }
+
+        // Blank out or reinstate our turn order based on which p[age we have moved to
+        if(state.MassCombatRules.battlePageId === pageId) {
+            // Reinstate turn order
+            Campaign().set("turnorder", state.MassCombatRules.battlePageTurnOrderStr);
+        }
+        else {
+            // Empty turn order
+            Campaign().set("turnorder", JSON.stringify([]));
+        }
+    }
+
+    /*
      * Event handling callbacks
      */
     const registerEventHandlers = () => {
         on('chat:message', chatMessage);
+        // TODO Should this be optional
+        on('change:campaign:playerpageid', pageChange);
         functionTable.resetAudioTracks();
+
+        // State object to hold persistent data, see pageChange function comment
+        if(!state.MassCombatRules) {
+            state.MassCombatRules = {
+                //tokensToHideOnPageChange : [],
+                battlePageId : -1,
+                battlePageTurnOrderStr : "",
+            }
+        }
+
         clog("Ready");
     };
 
