@@ -77,7 +77,7 @@ This can then be macro-ed up as:
 
 (I stole this code from another script somewhere, or maybe off the forum, but I can't remember where ;-)
 ###
-####  !transition fade-jukebox <track> <start volume> <end volume> \[increment, default: 2] \[milliseconds, default: 800] [reset]
+####  !transition fade-jukebox \<track> \<start volume> \<end volume> \[increment, default: 2] \[milliseconds, default: 800] [reset]
 
 Fade a jukebox track from one volume to another. These can be ‘stacked’ in a macro to do a cross-fade. e.g.:
 

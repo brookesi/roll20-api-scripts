@@ -669,7 +669,7 @@ const Transition = (() => {
                                     thenCallbacks[callbackCounter++]();
                                 }
                                 else {
-                                    clog("- All sequence operations complete");
+                                    clog("- All operations complete");
                                 }
                             });
                         }
@@ -679,7 +679,7 @@ const Transition = (() => {
                                 thenCallbacks[callbackCounter++]();
                             }
                             else {
-                                clog("- All sequence operations complete");
+                                clog("- All operations complete");
                             }
                         }
                     }, function(b) {
@@ -1049,9 +1049,9 @@ const Transition = (() => {
     /*
      * Helper: Vertically space a selection of text objects and justify
      */
-    layoutText = (msg, args) => {
+    verticalLayoutText = (msg, args) => {
 
-        clog("verticalSpace");
+        clog("verticalLayoutText");
 
         const selectionObj = processSelectionAndArgs(msg, args, true);
 
@@ -1129,6 +1129,59 @@ const Transition = (() => {
     }
 
     /*
+     * Helper: Vertically space a selection of text objects and justify
+     */
+    hozCentreText = (msg, args) => {
+
+        clog("hozCentreText");
+        const selectionObj = processSelectionAndArgs(msg, args, true);
+
+        if(typeof selectionObj === 'number') {
+            // Error, we've already alerted this so just return
+            return;
+        }
+
+        const shadowOffset = toInt(args[2]);
+
+        let textMetrics = {};
+        for(let i=0; i<selectionObj.selectedIds.length; i++) {
+            const id = selectionObj.selectedIds[i];
+            //clog("- selectedTypes:" + selectionObj.selectedTypes[i]);
+            if(selectionObj.selectedTypes[i] === "text") {
+                let textObj = getObj("text", id);
+
+                if(textObj) {
+                    const pageId = textObj.get("pageid");
+                    const textWidth = textObj.get("width");
+                    const pageWidth = getObj("page", pageId).get("width") * 70;
+                    textObj.set("left", (pageWidth/2));
+
+                    if(shadowOffset) {
+                        // Re-get the object
+                        textObj = getObj("text", id);
+                        // Create a shadow object based on our text object
+                        const attributes = ["top","left","width","height","text","font_size","rotation","color","font_family","layer","controlledby"];
+                        const offsetAttrs = ["top","left"];
+                        let attrObj = { pageid: pageId }
+                        _.each(attributes, function(attr) {
+                            if(offsetAttrs.includes(attr)) {
+                                attrObj[attr] = textObj.get(attr) + shadowOffset;
+                            }
+                            else {
+                                attrObj[attr] = textObj.get(attr);
+                            }
+                        });
+                        attrObj["color"] = "#00000080";
+                        let shadowTextObj = createObj("text", attrObj);
+                        //toBack(shadowTextObj);
+                        toFront(textObj);
+                    }
+                }
+            }
+        }
+    }
+
+    /*
      * Helper: Show the ids for a number of selected objects
      */
     markupSelection = (msg, args) => {
@@ -1180,7 +1233,8 @@ const Transition = (() => {
         "fade-jukebox": fadeJukebox,
         "wrap-macro": wrapMacro,
         "kill": killAllIntervals,
-        "layout-text": layoutText,
+        "vertical-layout-text": verticalLayoutText,
+        "hoz-centre-text": hozCentreText,
         "markup-selection": markupSelection,
         "debug-on": debugOn,
         "debug-off": debugOff,
