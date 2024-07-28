@@ -89,7 +89,7 @@ Fade a jukebox track from one volume to another. These can be ‘stacked’ in a
 **WARNING 2: Setting a delay of less than 500ms seems to stop the track playing immediately, the volume fades, then the track starts**
 
 ###
-#### !transition wrap-macro <macro> <increment> <milliseconds> <from|to> \[from|to] \[from|to]…
+#### !transition wrap-macro \<macro> \<increment> \<milliseconds> \<from|to> \[from|to] \[from|to]…
 
 This command allows you to pass repeated incremental values to a macro. An example would be:
 
@@ -115,9 +115,13 @@ will cause the token to move 1 unit per iteration.
 
 A selection of convenience functions which helped me setup pages for transitions.
 
-#### !transition layout-text <spacing (pixels)> <justification>
+#### !transition vertical-layout-text \<spacing (pixels)> \<justification>
 
 Convenience function to vertically space out a group of selected text objects and justify them using **left**, right or **center**|**centre**. The function finds the highest text item and spaces down from there.
+
+#### !transition hoz-centre-text [shadow offset (pixels)]
+
+Convenience function to horizontally space a text object and optionally create a shadow for it
 
 #### !transition markup-selection
 
