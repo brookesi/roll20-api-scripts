@@ -18,7 +18,7 @@ control their behaviour. There are four different types of ambient sources:
 and so on. we use the bar1 value to hold the volume, the tooltip to hold the track name and set the aura 1 value to 
 ALL, signifying an ‘always on source’.
 
-![MapAmbienceType1](https://static.wixstatic.com/media/6777d4_d39473c77fdc4b47aef51ad5cf45961a~mv2.png)
+![MapAmbienceType1](https://static.wixstatic.com/media/6777d4_ebed44291b7641e89ba1a00123c89f2b~mv2.png)
 
 2. Basic proximity ambiences that change their volume based on hero token proximity, e.g. rivers, 
 monsters, birds in trees etc. These sources can be linked to polygonal paths to provide dynamic sounds for 
@@ -26,22 +26,22 @@ rivers for example. For a simple source it is as above except bar 1 value and ma
 volume respectively. For a source linked to a polygonal path bar3 value holds the id of the path object. 
 We can use a simple macro */w gm @{selected|token_id}* to find our path id.
 
-![MapAmbienceType2](https://static.wixstatic.com/media/6777d4_5f5160bfb90e4d799268309a16515e15~mv2.png)
+![MapAmbienceType2](https://static.wixstatic.com/media/6777d4_0de2155c2bf7450083070197675e767e~mv2.png)
 
 3. 'Trigger' ambiences that play a sound once (e.g. not looped) based on hero token movement such as footsteps 
 in water or a repeatedly fireable trap. Again we use bar 1 for volume, tooltip and aura1 radius but also add 
 a bar2 value of ‘noloop’ meaning the sound is only played once. But the source will re-trigger each time we 
 are in proximity.
 
-![MapAmbienceType3](https://static.wixstatic.com/media/6777d4_6014d2f2517648e7aebaa679fd7400c7~mv2.png)
+![MapAmbienceType3](https://static.wixstatic.com/media/6777d4_551c2065339e4a47837102319f46d7dc~mv2.png)
 
 4. 'Trigger' ambiences as above but only fire once are then 'forgotten' such as a trap or bomb. These can also 
 execute a macro to create a visual effect such as showing or changing a token e.g. a pit trap or breaking something 
 for example. These are set up as per #3 above but we add 'forget' to the bar2 max.
 
-![MapAmbienceType4](https://static.wixstatic.com/media/6777d4_06ba270e11644136abd22627c35e8a5b~mv2.png)
+![MapAmbienceType4](https://static.wixstatic.com/media/6777d4_fbbb37f5a8aa47b69dfc1586eed2a803~mv2.png)
 
-![MapAmbienceType4a](https://static.wixstatic.com/media/6777d4_170d38ab0221432eb658af45f85ee102~mv2.png)
+![MapAmbienceType4a](https://static.wixstatic.com/media/6777d4_f9c89e8ef7a0488daa4be36ac573f609~mv2.png)
 
 Each ambient soundscape is re-built on a page change, or, when designing the page a *!mapam buildAmbientState* command
 can be used to rebuild the state. Once set up the soundscape automatically executes on a page change.
