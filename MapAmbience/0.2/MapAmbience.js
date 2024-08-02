@@ -105,26 +105,26 @@ const MapAmbience = (() => {
             if(msg.selected && msg.selected.length > 0) {
                 return getObj(msg.selected[0]._type, msg.selected[0]._id).get("_pageid");
             }
-    
+
             let player = getObj('player', msg.playerid);
             if (playerIsGM(msg.playerid)) {
                 return player.get('lastpage') || Campaign().get('playerpageid');
             }
-            
+
             let psp = Campaign().get('playerspecificpages');
             if (psp[msg.playerid]) {
                 return psp[msg.playerid];
             }
         }
-        
+
         return Campaign().get('playerpageid');
     }
-    
+
     /*
      * Get a named jukebox track
      */
     const getJukeboxTrack = (track) => {
-    
+
         if(jukeboxCache[track]) {
             return jukeboxCache[track];
         }
@@ -281,13 +281,13 @@ const MapAmbience = (() => {
         const gridSpaceDist = (pixelDistance/70) - (graphic.get("width") / 70 / 2);
         return Math.round(gridSpaceDist * scaleNumber / snappingIncrement);
     }
-    
+
     /*
      * See if this is a hero token, e.g. is represented by a character controlled by someone
      * TODO Should we allow hero tokens to be 'registered' for games without a character sheet?
      */
     const checkHeroToken = (graphic) => {
-    
+
         const name = graphic.get("name");
         if(name) {
             clog("- Processing: " + name);
@@ -310,7 +310,7 @@ const MapAmbience = (() => {
                 clog("- Ignoring: " + name + " as this is not controlled by a player");
             }
         }
-    } 
+    }
 
     /*
      * Store how close any hero is to any ambience so we can see if volume change is required
@@ -353,7 +353,7 @@ const MapAmbience = (() => {
     const buildAmbientState = () => {
 
         clog("buildAmbientState: currentPageId: " + currentPageId);
-        
+
         // Fairly simple here, just run through ambientSources and stop them playing, so on a page change everything
         // is reset and back to an initial state
         _.each(pageAmbients.ambientSources, function(value, key) {
@@ -393,7 +393,7 @@ const MapAmbience = (() => {
             if(!checkHeroToken(graphic)) {
                clog("- Ignoring: " + name + " as is not controlled by a player");
             }
-            
+
             // 3. Check if the graphic is an ambient source, it's name will start with 'Ambient' and the track will
             // be in the tooltip
             if(name.startsWith("Ambient")) {
@@ -403,12 +403,12 @@ const MapAmbience = (() => {
                 }
                 else {
                     let jbTrack = getJukeboxTrack(track);
-                
+
                     if(!jbTrack) {
                         clog("- Warning: Track name: " + track + " assigned to: " + name + " does NOT exist");
                     }
-                    else {       
-                        clog("- Adding ambient source: " + name); 
+                    else {
+                        clog("- Adding ambient source: " + name);
                         // Get the location
                         const top = graphic.get("top");
                         const left = graphic.get("left");
@@ -423,11 +423,11 @@ const MapAmbience = (() => {
 
                         const isWholeMap = ambientRadius.toUpperCase() === "ALL";
                         const ambientRadiusNum = toInt(ambientRadius);
-                        
+
                         // Now get the min and max volume from bar 1
                         const minVolume = graphic.get("bar1_value");
                         const maxVolume = graphic.get("bar1_max");
-                        
+
                         // Now get the loop boolean from bar2_value, and set it into the track
                         const bar2Value = graphic.get("bar2_value");
                         const bar3Value = graphic.get("bar3_value");
@@ -449,7 +449,7 @@ const MapAmbience = (() => {
                             // TODO, radius could be explicitly set to zero or negative, we'll end up processing it, but
                             // it will never trigger BUT if this script gets cleverer then *maybe* we'll have some sort of
                             // cross-source triggers...
-                                               
+
                             // We have enough information to store this record
                             clog("- Adding ambient source: " + name + ", id: " + graphic.id);
                             pageAmbients.ambientSources[graphic.id] = {
@@ -640,7 +640,7 @@ const MapAmbience = (() => {
     const graphicsAdd = (graphic) => {
 
         clog("graphicsAdd");
-        
+
         if(!checkHeroToken(graphic)) {
            clog("- Ignoring new graphic: " + graphic.get("name") + " as is not controlled by a player");
         }
