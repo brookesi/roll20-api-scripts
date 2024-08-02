@@ -777,7 +777,7 @@ const Transition = (() => {
            clog("- Ms delay cannot be zeo or undefined!", true, true);
            return;
         }
-        
+
         if(reset) {
             if(dlFadeReset) {
                 // Already done a daylight reset
