@@ -146,9 +146,9 @@ const MapAmbience = (() => {
      * We do this by the way to make the transitions less jarring as rapid token moves can cause a large change in
      * volume!
      */
-    const animateVolume = (track, targetVolume) => {
+    const animateVolume = (jbTrack, targetVolume) => {
 
-        let origVolume = track.get("volume");
+        let origVolume = jbTrack.get("volume");
         const volumeGap = targetVolume - origVolume;
 
         if(volumeGap === 0) {
@@ -171,16 +171,16 @@ const MapAmbience = (() => {
                 // We have decreased in volume to (or below) the targetVolume
                 clearInterval(intervalID);
                 // Set the volume to the target volume as with rounding we may be just off
-                track.set("volume", targetVolume);
+                jbTrack.set("volume", targetVolume);
             }
             else if(volumeGap > 0 && currVolume >= targetVolume) {
                 // We have increased in volume to (or above) the targetVolume
                 clearInterval(intervalID);
                 // Set the volume to the target volume as with rounding we may be just off
-                track.set("volume", targetVolume);
+                jbTrack.set("volume", targetVolume);
             }
             else {
-                track.set("volume", currVolume);
+                jbTrack.set("volume", currVolume);
             }
         }, 100);
     }
@@ -406,13 +406,13 @@ const MapAmbience = (() => {
             if(name.startsWith("Ambient")) {
                 const track = graphic.get("tooltip");
                 if(!track) {
-                    clog("- Warning: token with name: " + name + " has no track in the tooltip field")
+                    clog("- Warning: token with name: " + name + " has no track in the tooltip field", true, true)
                 }
                 else {
                     let jbTrack = getJukeboxTrack(track);
                 
                     if(!jbTrack) {
-                        clog("- Warning: Track name: " + track + " assigned to: " + name + " does NOT exist");
+                        clog("- Warning: Track name: " + track + " assigned to: " + name + " does NOT exist", true, true);
                     }
                     else {       
                         clog("- Adding ambient source: " + name); 
@@ -450,7 +450,7 @@ const MapAmbience = (() => {
                         }
 
                         if(isNaN(minVolume) || isNaN(maxVolume)) {
-                            clog("- Warning: Either Bar 1 Value (Min Volume: " + minVolume + " or Bar 1 Max (Max Volume): " + maxVolume + " is not set..");
+                            clog("- Warning: Either Bar 1 Value (Min Volume: " + minVolume + " or Bar 1 Max (Max Volume): " + maxVolume + " is not set..", true, true);
                         }
                         else {
                             // TODO, radius could be explicitly set to zero or negative, we'll end up processing it, but
@@ -519,6 +519,8 @@ const MapAmbience = (() => {
      * Calculate all the locations and proximities etc.
      */
     const resolveAmbientSource = (ambientSource, graphic, isAmbient) => {
+
+        clog("resolveAmbientSource: " + ambientSource.name + ", graphic: " + graphic + ", isAmbient: " + isAmbient);
 
         const jbTrack = getJukeboxTrack(ambientSource.track);
         if(!graphic) {
